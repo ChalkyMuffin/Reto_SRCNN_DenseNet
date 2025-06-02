@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Procesamiento de Imágenes</title>
+    <link rel="stylesheet" href="/templates/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📤 Carga tu mamografía</h1>
+        
+        <form method="POST" action="/process" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📸</div>
+                <p class="upload-text">Arrastra tu imagen aquí</p>
+                <p class="upload-subtext">o haz clic para seleccionar</p>
+                <input type="file" name="file" accept=".png,.jpg,.jpeg,.pgm" required class="file-input" id="fileInput">
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">
+                🚀 Procesar Imagen
+            </button>
+        </form>
+        
+        <div class="accepted-formats">
+            <h4>📁 Formatos aceptados:</h4>
+            <div class="format-tags">
+                <span class="format-tag">PNG</span>
+                <span class="format-tag">JPG</span>
+                <span class="format-tag">JPEG</span>
+                <span class="format-tag">PGM</span>
+            </div>
+        </div>
+
+        <div class="actions-section">
+            <div class="button-container">
+                <button type="button" class="btn-primary" id="scrnnInfoBtn">
+                    🧠 ¿Qué es SCRNN?
+                </button>
+                <button type="button" class="btn-primary" id="densenetInfoBtn">
+                    🔬 ¿Qué es DenseNet?
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scrnnModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🧠 Super-Resolution Convolutional Recurrent Neural Network (SCRNN)</h3>
+                <span class="close" id="closeScrnn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="classification-definition">
+                    <div class="classification-type-header">
+                        <div class="classification-type-icon">🔬</div>
+                        <h4>¿Qué es SCRNN?</h4>
+                    </div>
+                    <p>SCRNN es una red neuronal híbrida que combina capas convolucionales con unidades recurrentes para mejorar la resolución de imágenes médicas, especialmente mamografías.</p>
+                </div>
+
+                <div class="classification-details">
+                    <h5>🎯 Características principales:</h5>
+                    <ul>
+                        <li><strong>Super-resolución:</strong> Aumenta la resolución de imágenes manteniendo detalles críticos</li>
+                        <li><strong>Capas convolucionales:</strong> Extraen características espaciales de la imagen</li>
+                        <li><strong>Unidades recurrentes:</strong> Procesan información secuencial para mejor contexto</li>
+                        <li><strong>Optimización médica:</strong> Entrenada específicamente para mamografías</li>
+                    </ul>
+                </div>
+
+                <div class="confidence-explanation">
+                    <h5>📊 Ventajas en mamografías:</h5>
+                    <div class="confidence-factors">
+                        <div class="confidence-factor">
+                            <span class="factor-label">Mejora de detalles</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div class="confidence-factor">
+                            <span class="factor-label">Reducción de ruido</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 88%"></div>
+                            </div>
+                        </div>
+                        <div class="confidence-factor">
+                            <span class="factor-label">Preservación de bordes</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 92%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="confidence-summary">La red SCRNN logra un balance óptimo entre mejora de resolución y preservación de características médicas importantes.</p>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <h5>Progreso de entrenamiento</h5>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <img src="{{ training_graph }}" alt="Gráfica de entrenamiento SCRNN" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; padding: 20px; background: #f8f9fa; border-radius: 10px; color: #6c757d;">
+                                📊 Gráfica de entrenamiento no disponible
+                            </div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #6c757d; text-align: center; margin: 10px 0 0 0;">
+                            <strong>Eje X:</strong> Número de Epochs | <strong>Eje Y:</strong> PSNR (dB)
+                        </p>
+                        <div style="text-align: center; margin: 15px 0; padding: 10px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 10px; font-weight: 600;">
+                            🏆 PSNR máximo alcanzado: 47.53 dB
+                        </div>
+                    </div>
+                </div>
+
+                <div class="medical-note">
+                    <div class="medical-note-icon">⚕️</div>
+                    <div class="medical-note-content">
+                        <p><strong>Nota médica:</strong> Esta tecnología es una herramienta de apoyo diagnóstico. Siempre consulte con un profesional médico calificado para interpretación de resultados.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="densenetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔬 Densely Connected Convolutional Network (DenseNet)</h3>
+                <span class="close" id="closeDensenet">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="classification-definition">
+                    <div class="classification-type-header">
+                        <div class="classification-type-icon">🎯</div>
+                        <h4>¿Qué es DenseNet?</h4>
+                    </div>
+                    <p>DenseNet es una arquitectura de red neuronal convolucional que conecta cada capa con todas las capas subsecuentes, permitiendo un flujo de información más eficiente y mejor clasificación de mamografías.</p>
+                </div>
+
+                <div class="classification-details">
+                    <h5>🎯 Características principales:</h5>
+                    <ul>
+                        <li><strong>Conexiones densas:</strong> Cada capa recibe información de todas las capas anteriores</li>
+                        <li><strong>Reutilización de características:</strong> Mejora la eficiencia del aprendizaje</li>
+                        <li><strong>Reducción de parámetros:</strong> Arquitectura más compacta que redes tradicionales</li>
+                        <li><strong>Clasificación médica:</strong> Especializada en detección de patologías mamarias</li>
+                    </ul>
+                </div>
+
+                <div class="confidence-explanation">
+                    <h5>📊 Ventajas en clasificación:</h5>
+                    <div class="confidence-factors">
+                        <div class="confidence-factor">
+                            <span class="factor-label">Detección de patrones</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div class="confidence-factor">
+                            <span class="factor-label">Gradiente estable</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        <div class="confidence-factor">
+                            <span class="factor-label">Eficiencia computacional</span>
+                            <div class="factor-bar">
+                                <div class="factor-fill" style="width: 88%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="confidence-summary">DenseNet proporciona una clasificación robusta y precisa para el diagnóstico asistido de mamografías.</p>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-icon">📈</div>
+                        <h5>Progreso de entrenamiento</h5>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <img src="{{ training_densenet_graph }}" alt="Gráfica de entrenamiento DenseNet" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; padding: 20px; background: #f8f9fa; border-radius: 10px; color: #6c757d;">
+                                📊 Gráfica de entrenamiento no disponible
+                            </div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #6c757d; text-align: center; margin: 10px 0 0 0;">
+                            <strong>Eje X:</strong> Número de Epochs | <strong>Eje Y:</strong> Precisión (%)
+                        </p>
+                        <div style="text-align: center; margin: 15px 0; padding: 10px; background: linear-gradient(135deg, #007bff, #6610f2); color: white; border-radius: 10px; font-weight: 600;">
+                            🏆 Precisión máxima alcanzada: 85%
+                        </div>
+                        <div style="text-align: center; margin: 10px 0; padding: 8px; background: #e9ecef; border-radius: 8px; font-size: 0.9rem; color: #495057;">
+                            ⚙️ Entrenamiento con técnica de <strong>Bootstrapping</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="classification-details">
+                    <h5>🔄 Técnica de Bootstrapping:</h5>
+                    <ul>
+                        <li><strong>Muestreo con reemplazo:</strong> Genera múltiples conjuntos de datos de entrenamiento</li>
+                        <li><strong>Reducción de overfitting:</strong> Mejora la generalización del modelo</li>
+                        <li><strong>Estimación robusta:</strong> Proporciona medidas de incertidumbre más confiables</li>
+                        <li><strong>Estabilidad del modelo:</strong> Reduce la varianza en las predicciones</li>
+                    </ul>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stat-card">
+                        <div class="stat-icon">🎯</div>
+                        <h5>Matriz de Confusión - Bootstrapping</h5>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <img src="{{ matriz_de_confusion }}" alt="Matriz de Confusión DenseNet con Bootstrapping" style="max-width: 100%; height: auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; padding: 20px; background: #f8f9fa; border-radius: 10px; color: #6c757d;">
+                                🎯 Matriz de confusión no disponible
+                            </div>
+                        </div>
+                        <p style="font-size: 0.9rem; color: #6c757d; text-align: center; margin: 10px 0 0 0;">
+                            <strong>Evaluación:</strong> Rendimiento del modelo con técnica de Bootstrapping
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                            <div style="text-align: center; padding: 8px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border-radius: 8px; font-weight: 600;">
+                                ✅ Precisión: 85%
+                            </div>
+                            <div style="text-align: center; padding: 8px; background: linear-gradient(135deg, #17a2b8, #007bff); color: white; border-radius: 8px; font-weight: 600;">
+                                🔄 Bootstrapping
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin: 10px 0; padding: 8px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; font-size: 0.9rem; color: #856404;">
+                            ⚡ <strong>Beneficio:</strong> La matriz muestra la robustez del modelo ante variaciones en los datos
+                        </div>
+                    </div>
+                </div>
+
+                <div class="medical-note">
+                    <div class="medical-note-icon">⚕️</div>
+                    <div class="medical-note-content">
+                        <p><strong>Nota médica:</strong> Esta tecnología es una herramienta de apoyo diagnóstico. Siempre consulte con un profesional médico calificado para interpretación de resultados.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const submitBtn = document.getElementById('submitBtn');
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                showFileInfo(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showFileInfo(e.target.files[0]);
+            }
+        });
+
+        function showFileInfo(file) {
+            fileName.textContent = `📄 ${file.name}`;
+            fileSize.textContent = `📏 ${formatFileSize(file.size)}`;
+            fileInfo.classList.add('show');
+            submitBtn.classList.add('active');
+            
+            uploadZone.querySelector('.upload-text').textContent = 'Imagen seleccionada';
+            uploadZone.querySelector('.upload-subtext').textContent = 'Haz clic para cambiar';
+            uploadZone.querySelector('.upload-icon').textContent = '✅';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', (e) => {
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Por favor selecciona una imagen antes de procesar.');
+            }
+        });
+
+        const scrnnModal = document.getElementById('scrnnModal');
+        const scrnnInfoBtn = document.getElementById('scrnnInfoBtn');
+        const closeScrnn = document.getElementById('closeScrnn');
+
+        scrnnInfoBtn.addEventListener('click', () => {
+            scrnnModal.style.display = 'block';
+            setTimeout(() => {
+                scrnnModal.classList.add('show');
+            }, 10);
+        });
+
+        closeScrnn.addEventListener('click', () => {
+            scrnnModal.classList.remove('show');
+            setTimeout(() => {
+                scrnnModal.style.display = 'none';
+            }, 300);
+        });
+
+        const densenetModal = document.getElementById('densenetModal');
+        const densenetInfoBtn = document.getElementById('densenetInfoBtn');
+        const closeDensenet = document.getElementById('closeDensenet');
+
+        densenetInfoBtn.addEventListener('click', () => {
+            densenetModal.style.display = 'block';
+            setTimeout(() => {
+                densenetModal.classList.add('show');
+            }, 10);
+        });
+
+        closeDensenet.addEventListener('click', () => {
+            densenetModal.classList.remove('show');
+            setTimeout(() => {
+                densenetModal.style.display = 'none';
+            }, 300);
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === scrnnModal) {
+                scrnnModal.classList.remove('show');
+                setTimeout(() => {
+                    scrnnModal.style.display = 'none';
+                }, 300);
+            }
+            if (e.target === densenetModal) {
+                densenetModal.classList.remove('show');
+                setTimeout(() => {
+                    densenetModal.style.display = 'none';
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>

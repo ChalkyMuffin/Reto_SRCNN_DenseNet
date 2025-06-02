@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados - Procesamiento de Imágenes</title>
+    <link rel="stylesheet" href="/templates/styles.css">
+</head>
+<body>
+    <div class="results-container">
+        <div class="results-header">
+            <h1>✨ Resultados del Procesamiento</h1>
+            <div class="processing-status">
+                <span class="status-icon">🎯</span>
+                <span class="status-text">Procesamiento completado exitosamente</span>
+            </div>
+        </div>
+        
+        <div class="image-grid">
+            <div class="image-card" data-type="original">
+                <div class="card-header">
+                    <h3>📷 Original</h3>
+                    <div class="card-badge original-badge">Imagen base</div>
+                </div>
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename=original) }}" alt="Imagen Original" class="result-image">
+                    <div class="image-overlay">
+                        <button class="zoom-btn" data-image="{{ url_for('static', filename=original) }}" data-title="Original">🔍 Ver completa</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="image-card" data-type="degraded">
+                <div class="card-header">
+                    <h3>📉 Degradada</h3>
+                    <div class="card-badge degraded-badge">Procesada</div>
+                </div>
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename=degradada) }}" alt="Imagen Degradada" class="result-image">
+                    <div class="image-overlay">
+                        <button class="zoom-btn" data-image="{{ url_for('static', filename=degradada) }}" data-title="Degradada">🔍 Ver completa</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="image-card featured" data-type="enhanced">
+                <div class="card-header">
+                    <h3>🚀 Super Resolución</h3>
+                    <div class="card-badge enhanced-badge">✨ Mejorada</div>
+                </div>
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename=superresolucion) }}" alt="Imagen con Super Resolución" class="result-image">
+                    <div class="image-overlay">
+                        <button class="zoom-btn" data-image="{{ url_for('static', filename=superresolucion) }}" data-title="Super Resolución">🔍 Ver completa</button>
+                    </div>
+                </div>
+                <div class="featured-ribbon">🌟 Resultado Final</div>
+                <!-- PSNR Badge mejorado con click para información -->
+                <div class="psnr-badge" onclick="openPsnrModal()">
+                    <span class="psnr-value">{{ psnr }} dB</span>
+                    <span class="psnr-label">PSNR ℹ️</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="classification-section">
+            <div class="clasificacion-result">
+                <div class="classification-header">
+                    <h2>🎯 Clasificación de la Imagen</h2>
+                </div>
+                <div class="classification-content">
+                    <div class="classification-main">
+                        <div class="classification-label">
+                            <span class="clasificacion-text">{{ clasificacion }}</span>
+                            <button class="classification-info-btn" onclick="openClassificationModal('{{ clasificacion }}')">
+                                ℹ️ Info
+                            </button>
+                        </div>
+                        <div class="confidence-section">
+                            <div class="confidence-bar">
+                                <div class="confidence-fill"></div>
+                            </div>
+                            <div class="confidence-details">
+                                <span class="confidence-text">Confianza del modelo</span>
+                                <span class="confidence-percentage">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🔄</div>
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Imágenes generadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value">{{ psnr }} dB</div>
+                    <div class="stat-label">PSNR Obtenido</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Éxito del proceso</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions-section">
+            <div class="button-container">
+                <a href="/" class="btn-primary">
+                    <span class="btn-icon">📷</span>
+                    <span class="btn-text">Procesar Nueva Imagen</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para vista ampliada -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Imagen</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de información PSNR -->
+    <div id="psnrModal" class="psnr-modal">
+        <div class="psnr-modal-content">
+            <div class="psnr-modal-header">
+                <h3>📊 ¿Qué es el PSNR?</h3>
+                <span class="close-psnr" onclick="closePsnrModal()">&times;</span>
+            </div>
+            <div class="psnr-modal-body">
+                <div class="psnr-definition">
+                    <h4>Peak Signal-to-Noise Ratio</h4>
+                    <p><strong>PSNR</strong> es una métrica que mide la calidad de una imagen reconstruida comparándola con la imagen original. Se expresa en decibeles (dB).</p>
+                </div>
+                
+                <div class="psnr-scale">
+                    <h5>🎯 Escala de Calidad:</h5>
+                    <div class="scale-item">
+                        <span class="scale-range">> 40 dB</span>
+                        <span class="scale-quality">Excelente calidad</span>
+                    </div>
+                    <div class="scale-item">
+                        <span class="scale-range">30-40 dB</span>
+                        <span class="scale-quality">Muy buena calidad</span>
+                    </div>
+                    <div class="scale-item">
+                        <span class="scale-range">20-30 dB</span>
+                        <span class="scale-quality">Buena calidad</span>
+                    </div>
+                    <div class="scale-item">
+                        <span class="scale-range">< 20 dB</span>
+                        <span class="scale-quality">Calidad aceptable</span>
+                    </div>
+                </div>
+                
+                <p><strong>🔍 Interpretación:</strong> Un valor más alto de PSNR indica mayor similitud con la imagen original y mejor calidad de reconstrucción.</p>
+                
+                <p><strong>📈 Tu resultado:</strong> <span style="color: #28a745; font-weight: bold;">{{ psnr }} dB</span> - ¡Excelente trabajo del algoritmo de super resolución!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de información de clasificación -->
+    <div id="classificationModal" class="classification-modal">
+        <div class="classification-modal-content">
+            <div class="classification-modal-header">
+                <h3 id="classificationModalTitle">🏥 Información de Clasificación</h3>
+                <span class="close-classification" onclick="closeClassificationModal()">&times;</span>
+            </div>
+            <div class="classification-modal-body">
+                <div class="classification-definition">
+                    <div class="classification-type-header">
+                        <span id="classificationIcon" class="classification-type-icon">🔍</span>
+                        <h4 id="classificationName">Clasificación</h4>
+                    </div>
+                    <p id="classificationDescription">Descripción de la clasificación</p>
+                </div>
+                
+                <div class="classification-details">
+                    <h5>📋 Características Clínicas:</h5>
+                    <ul id="classificationCharacteristics">
+                        <li>Característica 1</li>
+                        <li>Característica 2</li>
+                    </ul>
+                </div>
+
+                <div class="medical-note">
+                    <div class="medical-note-icon">⚕️</div>
+                    <div class="medical-note-content">
+                        <p><strong>Nota Médica:</strong> Esta clasificación es realizada por un modelo de inteligencia artificial no debe de ser interpretada como verdadera y debe ser confirmada por un profesional médico calificado para diagnóstico clínico.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const classificationData = {
+            'CALC': {
+                name: 'Calcificación (CALC)',
+                icon: '💎',
+                description: 'Depósitos de calcio en el tejido mamario que aparecen como puntos brillantes en las mamografías.',
+                characteristics: [
+                    'Aparecen como puntos blancos brillantes en la imagen',
+                    'Pueden ser benignas o requerir seguimiento',
+                    'Su forma y distribución son importantes para el diagnóstico',
+                    'Las microcalcificaciones agrupadas requieren mayor atención'
+                ]
+            },
+            'CIRC': {
+                name: 'Masas Bien Definidas (CIRC)',
+                icon: '⭕',
+                description: 'Masas con bordes claros y bien definidos, generalmente de naturaleza benigna.',
+                characteristics: [
+                    'Bordes suaves y regulares',
+                    'Contorno claramente visible',
+                    'Frecuentemente corresponden a quistes o fibroadenomas',
+                    'Buen pronóstico en la mayoría de los casos'
+                ]
+            },
+            'SPIC': {
+                name: 'Masas Espiculadas (SPIC)',
+                icon: '⭐',
+                description: 'Masas con bordes irregulares que se extienden hacia el tejido circundante como espículas.',
+                characteristics: [
+                    'Bordes irregulares con extensiones radiadas',
+                    'Apariencia de "estrella" o "araña"',
+                    'Requieren evaluación médica inmediata',
+                    'Pueden indicar malignidad y necesitan biopsia'
+                ]
+            },
+            'MISC': {
+                name: 'Masas Mal Definidas (MISC)',
+                icon: '🔍',
+                description: 'Masas con bordes poco claros o irregulares que no encajan en otras categorías específicas.',
+                characteristics: [
+                    'Bordes difusos o poco definidos',
+                    'Contorno irregular sin patrón específico',
+                    'Requieren evaluación adicional',
+                    'Pueden necesitar estudios complementarios'
+                ]
+            },
+            'ARCH': {
+                name: 'Distorsión Arquitectural (ARCH)',
+                icon: '🏗️',
+                description: 'Alteración en la arquitectura normal del tejido mamario sin masa visible clara.',
+                characteristics: [
+                    'Distorsión del patrón normal del tejido',
+                    'No se observa una masa definida',
+                    'Puede indicar fibrosis o cicatrización',
+                    'Requiere correlación clínica y seguimiento'
+                ]
+            },
+            'ASYM': {
+                name: 'Asimetría (ASYM)',
+                icon: '⚖️',
+                description: 'Diferencia en la densidad o arquitectura del tejido entre ambas mamas.',
+                characteristics: [
+                    'Diferencia notable entre ambas mamas',
+                    'Puede ser focal o global',
+                    'Frecuentemente benigna pero requiere evaluación',
+                    'Importante comparar con estudios previos'
+                ]
+            },
+            'NORM': {
+                name: 'Normal (NORM)',
+                icon: '✅',
+                description: 'Tejido mamario con apariencia normal sin hallazgos patológicos significativos.',
+                characteristics: [
+                    'Arquitectura del tejido normal',
+                    'Sin masas, calcificaciones o distorsiones',
+                    'Densidad mamaria dentro de parámetros normales',
+                    'No requiere seguimiento adicional inmediato'
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.zoom-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const imageSrc = this.getAttribute('data-image');
+                    const title = this.getAttribute('data-title');
+                    openModal(imageSrc, title);
+                });
+            });
+
+            document.getElementById('downloadBtn')?.addEventListener('click', downloadResults);
+            document.getElementById('shareBtn')?.addEventListener('click', shareResults);
+            document.getElementById('closeModal')?.addEventListener('click', closeModal);
+
+            const cards = document.querySelectorAll('.image-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('animated');
+                }, index * 150);
+            });
+
+            setTimeout(() => {
+                const confidenceBar = document.querySelector('.confidence-fill');
+                confidenceBar.style.width = '85%'; 
+            }, 1000);
+
+            setTimeout(() => {
+                animateStats();
+            }, 500);
+
+            setTimeout(() => {
+                const psnrBadge = document.querySelector('.psnr-badge');
+                if (psnrBadge) {
+                    psnrBadge.classList.add('animate-in');
+                }
+            }, 800);
+        });
+
+        function animateStats() {
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(stat => {
+                stat.classList.add('animate-count');
+            });
+        }
+
+        function openModal(imageSrc, title) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            modalImage.src = imageSrc;
+            modalTitle.textContent = title;
+            modal.style.display = 'block';
+            
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function openPsnrModal() {
+            const modal = document.getElementById('psnrModal');
+            modal.style.display = 'block';
+            
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function closePsnrModal() {
+            const modal = document.getElementById('psnrModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function openClassificationModal(classification) {
+            const modal = document.getElementById('classificationModal');
+            const data = classificationData[classification] || classificationData['NORM'];
+            
+            document.getElementById('classificationIcon').textContent = data.icon;
+            document.getElementById('classificationName').textContent = data.name;
+            document.getElementById('classificationDescription').textContent = data.description;
+            
+            const characteristicsList = document.getElementById('classificationCharacteristics');
+            characteristicsList.innerHTML = '';
+            data.characteristics.forEach(char => {
+                const li = document.createElement('li');
+                li.textContent = char;
+                characteristicsList.appendChild(li);
+            });
+            
+            modal.style.display = 'block';
+            
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+
+        function closeClassificationModal() {
+            const modal = document.getElementById('classificationModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            const psnrModal = document.getElementById('psnrModal');
+            const classificationModal = document.getElementById('classificationModal');
+            
+            if (event.target == imageModal) {
+                closeModal();
+            }
+            if (event.target == psnrModal) {
+                closePsnrModal();
+            }
+            if (event.target == classificationModal) {
+                closeClassificationModal();
+            }
+        }
+
+        function downloadResults() {
+            alert('Funcionalidad de descarga en desarrollo 📥');
+        }
+
+        function shareResults() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Resultados de Procesamiento de Imagen',
+                    text: 'Mira los resultados de mi procesamiento de imagen con IA',
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('¡Enlace copiado al portapapeles! 📋');
+                });
+            }
+        }
+
+        document.querySelectorAll('.image-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
